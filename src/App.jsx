@@ -1,39 +1,76 @@
-import { useEffect, useRef, useState } from "react";
-import { start } from "./game/engine.js";
+import { useEffect, useState } from "react";
+import MainMenu from "./ui/MainMenu.jsx";
+import NewWorldDialog from "./ui/NewWorldDialog.jsx";
+import WorldPicker from "./ui/WorldPicker.jsx";
+import GameView from "./ui/GameView.jsx";
+import { loadWorld, getLastWorld } from "./ui/storage.js";
 import "./App.css";
+import "./ui/menu.css";
 
-const UI = "/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI";
-const BARS = ["greenbar_00", "greenbar_01", "greenbar_02", "greenbar_03", "greenbar_04", "greenbar_05", "greenbar_06"];
+// App state machine: menu -> (new | picker overlay) -> play. The pack loading
+// screen lives inside GameView between selecting a world and the engine being ready.
+export default function App() {
+  const [screen, setScreen] = useState("menu"); // "menu" | "play"
+  const [overlay, setOverlay] = useState(null); // null | "new" | "picker"
+  const [world, setWorld] = useState(null);
+  const [worldId, setWorldId] = useState(null);
+  const [lastId, setLastId] = useState(null);
+  const [playKey, setPlayKey] = useState(0); // remount GameView per world
 
-function App() {
-  const rootRef = useRef(null);
-  const startedRef = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const [ready, setReady] = useState(false);
+  useEffect(() => { setLastId(getLastWorld()); }, [screen]);
 
+  // ?world=<name> still works: deep-link straight into a bundled sample world
   useEffect(() => {
-    if (startedRef.current) return; // survive StrictMode double-invoke
-    startedRef.current = true;
-    start(rootRef.current, (p) => setProgress(p), () => setReady(true));
+    const w = new URLSearchParams(location.search).get("world");
+    if (!w) return;
+    fetch(`/worlds/${w}.world.json`).then((r) => r.ok ? r.json() : null).then((doc) => {
+      if (doc) openWorld(doc, null);
+    }).catch(() => {});
   }, []);
 
-  const bar = BARS[Math.min(BARS.length - 1, Math.round(progress * (BARS.length - 1)))];
+  function openWorld(doc, id) {
+    setWorld(doc);
+    setWorldId(id);
+    setPlayKey((k) => k + 1);
+    setOverlay(null);
+    setScreen("play");
+  }
+
+  // board resize replaces the live doc and remounts the engine at the new size.
+  // Unmount first (null world) so the old engine fully tears down before the new
+  // one inits — concurrent Pixi apps corrupt the shared texture pool.
+  function replaceWorld(doc) {
+    setWorld(null);
+    setTimeout(() => { setWorld(doc); setPlayKey((k) => k + 1); }, 0);
+  }
+
+  const startNew = (doc) => openWorld(doc, null);
+  const openSaved = async (id) => { try { openWorld(await loadWorld(id), id); } catch (e) { console.error(e); } };
+
   return (
-    <div className="game-root" ref={rootRef}>
-      {!ready && (
-        <div className="loading">
-          <div className="loading-banner">
-            <img src={`${UI}/label_left.png`} alt="" />
-            <img className="mid" src={`${UI}/label_middle.png`} alt="" />
-            <img src={`${UI}/label_right.png`} alt="" />
-            <span>SUNNYSIDE COVE</span>
-          </div>
-          <img className="loading-bar" src={`${UI}/${bar}.png`} alt={`loading ${Math.round(progress * 100)}%`} />
-          <img className="loading-timer" src={`${UI}/sandtimer.png`} alt="" />
-        </div>
+    <>
+      {screen === "menu" && (
+        <MainMenu
+          onNew={() => setOverlay("new")}
+          onLoad={() => setOverlay("picker")}
+          onContinue={openSaved}
+          lastWorldId={lastId}
+        />
       )}
-    </div>
+      {screen === "play" && world && (
+        <GameView
+          key={playKey}
+          world={world}
+          worldId={worldId}
+          onExit={() => setScreen("menu")}
+          onSavedId={(id) => { setWorldId(id); setLastId(id); }}
+          onReplaceWorld={replaceWorld}
+        />
+      )}
+      {overlay === "new" && <NewWorldDialog onCreate={startNew} onCancel={() => setOverlay(null)} />}
+      {overlay === "picker" && (
+        <WorldPicker onOpen={openSaved} onImport={(doc) => startNew(doc)} onCancel={() => setOverlay(null)} />
+      )}
+    </>
   );
 }
-
-export default App;

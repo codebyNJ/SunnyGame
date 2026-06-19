@@ -1,0 +1,260 @@
+/* Pre-game UI: main menu, dialogs, world picker. Pack-asset styling. */
+:root {
+  --ui: "/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI";
+  --ink: #4a2f23;
+  --cream: #fff7e6;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  font-family: "Courier New", monospace;
+  color: var(--cream);
+  background:
+    radial-gradient(120% 90% at 50% -10%, #7ec8e8 0%, #4ba6cf 45%, #2a93c9 100%);
+  overflow: hidden;
+  user-select: none;
+}
+/* drifting cloud band for life */
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 60px, transparent 60px 180px);
+  pointer-events: none;
+}
+
+/* ---- title banner (big label banner) ---- */
+.title {
+  display: flex;
+  align-items: stretch;
+  filter: drop-shadow(0 4px 0 rgba(0,0,0,0.18));
+  image-rendering: pixelated;
+  margin-bottom: 6px;
+}
+.title .cap { width: 18px; background-size: 100% 100%; background-repeat: no-repeat; }
+.title .cap.l { background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_left.png"); }
+.title .cap.r { background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_right.png"); }
+.title .body {
+  display: flex; align-items: center; padding: 0 22px;
+  background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_middle.png");
+  background-size: auto 100%; background-repeat: repeat-x; image-rendering: pixelated;
+  font-size: 34px; font-weight: bold; letter-spacing: 3px;
+  height: 58px; text-shadow: 0 2px 0 rgba(0,0,0,0.25);
+}
+.subtitle { margin-top: -8px; font-size: 13px; letter-spacing: 2px; opacity: 0.9; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+
+/* ---- banner buttons ---- */
+.menu-buttons { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.banner {
+  display: inline-flex; align-items: stretch; border: 0; padding: 0; background: none;
+  cursor: pointer; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,0.18));
+  transition: transform 0.06s ease;
+}
+.banner:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); }
+.banner:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.banner:disabled { opacity: 0.45; cursor: default; }
+.banner-cap { width: 15px; background-size: 100% 100%; background-repeat: no-repeat; }
+.banner-l { background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_left.png"); }
+.banner-r { background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_right.png"); }
+.banner-body {
+  display: flex; align-items: center; justify-content: center; min-width: 200px;
+  padding: 0 18px; height: 46px;
+  background-image: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/label_middle.png");
+  background-size: auto 100%; background-repeat: repeat-x; image-rendering: pixelated;
+  color: var(--cream); font-size: 17px; font-weight: bold; letter-spacing: 2px;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.28);
+}
+.banner.small .banner-body { height: 34px; min-width: auto; font-size: 13px; padding: 0 12px; }
+
+/* ---- disc buttons ---- */
+.disc {
+  width: 44px; height: 44px; border: 0; padding: 0; cursor: pointer;
+  background: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/itemdisc_01.png") center/contain no-repeat;
+  image-rendering: pixelated; display: inline-flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.2)); transition: transform 0.06s ease;
+}
+.disc:hover { transform: scale(1.1); }
+.disc-icon { width: 22px; height: 22px; image-rendering: pixelated; }
+
+/* ---- 9-slice box ---- */
+.nine {
+  display: grid;
+  grid-template-columns: 12px 1fr 12px;
+  grid-template-rows: 12px 1fr 12px;
+}
+.nine > span { display: block; }
+.nine-c { padding: 18px; color: var(--ink); }
+
+/* ---- dialog / picker overlay ---- */
+.overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 40, 60, 0.5); backdrop-filter: blur(2px); z-index: 20;
+}
+.panel { width: min(680px, 92vw); max-height: 86vh; color: var(--ink); font-family: "Courier New", monospace; }
+.panel h2 { margin: 0 0 14px; font-size: 20px; letter-spacing: 2px; text-align: center; }
+.panel .row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.panel label { font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+.panel input[type="text"] {
+  font-family: inherit; font-size: 15px; padding: 8px 10px; border: 2px solid var(--ink);
+  border-radius: 4px; background: #fffdf5; color: var(--ink);
+}
+.choice-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.choice {
+  flex: 1; min-width: 120px; padding: 10px; border: 2px solid var(--ink); border-radius: 6px;
+  background: #fffdf5; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold;
+  text-align: center; transition: all 0.08s ease;
+}
+.choice.active { background: #ffd98a; box-shadow: inset 0 0 0 2px #b9821f; }
+.choice small { display: block; font-weight: normal; opacity: 0.75; margin-top: 4px; }
+.panel-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+/* ---- world picker grid ---- */
+.world-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px; overflow-y: auto; max-height: 56vh; padding: 4px;
+}
+.world-card {
+  border: 2px solid var(--ink); border-radius: 8px; background: #fffdf5; cursor: pointer;
+  overflow: hidden; display: flex; flex-direction: column; transition: transform 0.07s ease;
+  position: relative;
+}
+.world-card:hover { transform: translateY(-3px); box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+.world-card .thumb {
+  width: 100%; aspect-ratio: 10 / 7; background: #2a93c9 center/cover no-repeat; image-rendering: pixelated;
+  display: flex; align-items: center; justify-content: center; color: #cde6f5; font-size: 11px;
+}
+.world-card .cap2 { padding: 8px; }
+.world-card .cap2 b { display: block; font-size: 13px; letter-spacing: 1px; }
+.world-card .cap2 small { font-size: 10px; opacity: 0.7; }
+.world-card .del {
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border: 0; border-radius: 50%;
+  background: url("/Sunnyside_World_ASSET_PACK_V2.1/Sunnyside_World_Assets/UI/cancel.png") center/14px no-repeat #fff;
+  image-rendering: pixelated; cursor: pointer; opacity: 0; transition: opacity 0.1s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.world-card:hover .del { opacity: 1; }
+.empty-note { text-align: center; padding: 30px; opacity: 0.7; font-size: 13px; }
+
+/* ---- in-build top bar ---- */
+.build-bar {
+  position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; align-items: center; z-index: 10;
+}
+.build-toast {
+  position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 12;
+  background: rgba(40, 70, 40, 0.9); color: var(--cream); padding: 8px 16px; border-radius: 20px;
+  font-family: "Courier New", monospace; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+  pointer-events: none; opacity: 0; transition: opacity 0.25s ease;
+}
+.build-toast.show { opacity: 1; }
+.bar-sep { width: 1px; height: 28px; background: rgba(255,255,255,0.35); margin: 0 2px; }
+.disc.undo, .disc.redo { width: 38px; height: 38px; }
+.disc.undo .disc-icon, .disc.redo .disc-icon { width: 18px; height: 18px; }
+.disc.undo { transform: none; }
+.disc.off { opacity: 0.4; pointer-events: none; }
+.disc.undo img { transform: rotate(0deg); }
+
+/* contextual placement bar */
+.arm-bar {
+  position: absolute; top: 64px; left: 12px; z-index: 10; display: flex; align-items: center; gap: 8px;
+  background: rgba(30, 55, 75, 0.82); padding: 6px 10px 6px 14px; border-radius: 22px;
+  font-family: "Courier New", monospace; color: var(--cream);
+}
+.arm-name { font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-right: 4px; }
+.arm-sel {
+  font-family: "Courier New", monospace; font-size: 12px; font-weight: bold; padding: 5px 6px;
+  border: 0; border-radius: 6px; background: #e9f2f7; color: var(--ink); cursor: pointer;
+}
+
+/* tool toggle buttons (pan/select/tools) */
+.tool-btn {
+  border: 0; cursor: pointer; font-family: "Courier New", monospace; font-size: 12px; font-weight: bold;
+  letter-spacing: 1px; padding: 7px 11px; border-radius: 16px; color: var(--cream);
+  background: rgba(0, 0, 0, 0.28); filter: drop-shadow(0 2px 0 rgba(0,0,0,0.18));
+}
+.tool-btn.on { background: #ffd98a; color: var(--ink); }
+
+/* region rename + color swatches */
+.region-name {
+  font-family: "Courier New", monospace; font-size: 13px; font-weight: bold; padding: 5px 8px;
+  border: 0; border-radius: 6px; background: #e9f2f7; color: var(--ink); width: 130px;
+}
+.swatches { display: flex; gap: 4px; }
+.swatch { width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.3); border-radius: 50%; cursor: pointer; padding: 0; }
+.swatch.on { border-color: #fff; box-shadow: 0 0 0 2px #ffd24a; }
+
+/* empty-board hint */
+.empty-hint {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 8;
+  text-align: center; font-family: "Courier New", monospace; color: var(--cream);
+  background: rgba(30, 55, 75, 0.7); padding: 16px 26px; border-radius: 14px; pointer-events: none;
+  line-height: 1.7; font-size: 14px; max-width: 60vw;
+}
+.empty-hint b { color: #ffd98a; }
+
+/* help shortcuts grid */
+.help-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.help-row { display: grid; grid-template-columns: 180px 1fr; gap: 14px; align-items: baseline; }
+.help-k { font-weight: bold; font-size: 12px; }
+.help-v { font-size: 12px; opacity: 0.85; }
+.panel label { display: flex; flex-direction: column; gap: 4px; }
+.panel label input[type="number"] {
+  font-family: inherit; font-size: 15px; padding: 7px 9px; border: 2px solid var(--ink);
+  border-radius: 4px; background: #fffdf5; color: var(--ink); margin-top: 2px;
+}
+
+/* ---- palette (right dock) ---- */
+.palette {
+  position: absolute; top: 12px; right: 12px; bottom: 12px; width: 268px; z-index: 10;
+  display: flex; flex-direction: column;
+  background: rgba(38, 60, 78, 0.9); border: 2px solid #1b2c3a; border-radius: 10px;
+  font-family: "Courier New", monospace; color: var(--cream); overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+.pal-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.18); }
+.pal-title { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
+.pal-collapse { border: 0; background: none; color: var(--cream); font-size: 18px; cursor: pointer; line-height: 1; }
+.pal-reopen {
+  position: absolute; top: 12px; right: 12px; z-index: 10; border: 0; cursor: pointer;
+  background: rgba(38, 60, 78, 0.9); color: var(--cream); border-radius: 8px; padding: 8px 12px;
+  font-family: "Courier New", monospace; font-weight: bold; letter-spacing: 1px; font-size: 12px;
+}
+.pal-search { display: flex; align-items: center; gap: 6px; padding: 8px 10px; }
+.pal-search img { width: 16px; height: 16px; image-rendering: pixelated; opacity: 0.8; }
+.pal-search input {
+  flex: 1; font-family: inherit; font-size: 13px; padding: 5px 8px; border: 0; border-radius: 4px;
+  background: #e9f2f7; color: var(--ink);
+}
+.pal-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.pal-tab {
+  border: 0; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: bold;
+  padding: 4px 8px; border-radius: 12px; background: rgba(255,255,255,0.1); color: var(--cream);
+}
+.pal-tab.active { background: #ffd98a; color: var(--ink); }
+.pal-grid {
+  flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px; padding: 8px; align-content: start;
+}
+.pal-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+  border: 2px solid transparent; border-radius: 6px; padding: 4px 2px; background: rgba(255,255,255,0.06);
+  font-family: inherit; color: var(--cream);
+}
+.pal-item:hover { background: rgba(255,255,255,0.14); }
+.pal-item.armed { border-color: #ffd24a; background: rgba(255, 210, 74, 0.22); }
+.pal-item.soon { opacity: 0.5; cursor: default; }
+.pal-thumb {
+  width: 46px; height: 46px; object-fit: contain; image-rendering: pixelated;
+  display: block;
+}
+.pal-thumb-empty { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.pal-label {
+  font-size: 9px; line-height: 1.1; text-align: center; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;
+}
+.pal-empty { grid-column: 1 / -1; text-align: center; opacity: 0.6; padding: 20px; font-size: 12px; }

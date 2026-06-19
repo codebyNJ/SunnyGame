@@ -8,10 +8,14 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "map": "bun scripts/build_map.ts"
+    "map": "bun scripts/build_map.ts",
+    "catalog": "bun scripts/build_catalog.ts",
+    "worlds": "bun scripts/convert_map_to_world.ts && bun scripts/make_starter_world.ts"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
+    "@tauri-apps/plugin-fs": "^2.5.1",
     "@tauri-apps/plugin-opener": "^2",
     "pixi.js": "^8.19.0",
     "react": "^19.1.0",
