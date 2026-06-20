@@ -220,14 +220,35 @@ export default function GameView({ world, worldId, onExit, onSavedId, onReplaceW
 
       {!ready && (
         <div className="loading">
-          <div className="loading-banner">
-            <img src={`${UI}/label_left.png`} alt="" />
-            <img className="mid" src={`${UI}/label_middle.png`} alt="" />
-            <img src={`${UI}/label_right.png`} alt="" />
-            <span>{world.name?.toUpperCase() || "SUNNYSIDE"}</span>
+          <div className="load-sky" />
+          <div className="clouds">
+            <i className="cloud cl1" /><i className="cloud cl3" /><i className="cloud cl2" />
           </div>
-          <img className="loading-bar" src={`${UI}/${bar}.png`} alt={`loading ${Math.round(progress * 100)}%`} />
-          <img className="loading-timer" src={`${UI}/sandtimer.png`} alt="" />
+          <div className="ground load-ground">
+            <div className="grass-edge" />
+            <i className="spr windmill load-windmill" />
+            <i className="spr tree2 load-tree" />
+            <span className="walker"><i className="spr walk base" /><i className="spr walk hair" /><i className="spr walk tools" /></span>
+            <i className="spr sheep load-sheep" />
+          </div>
+          <div className="load-card">
+            <div className="loading-banner">
+              <img src={`${UI}/label_left.png`} alt="" />
+              <img className="mid" src={`${UI}/label_middle.png`} alt="" />
+              <img src={`${UI}/label_right.png`} alt="" />
+              <span>{world.name?.toUpperCase() || "SUNNYSIDE"}</span>
+            </div>
+            <div className="load-bar">
+              <img className="loading-bar" src={`${UI}/${bar}.png`} alt="" />
+              <span className="load-pct">{Math.round(progress * 100)}%</span>
+              <img className="loading-timer" src={`${UI}/sandtimer.png`} alt="" />
+            </div>
+            <div className="load-tips">
+              <span>Shaping the coastline…</span>
+              <span>Planting trees &amp; flowers…</span>
+              <span>Waking the villagers…</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

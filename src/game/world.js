@@ -56,19 +56,15 @@ const DEFAULT_TYPES = ["sea", "grass", "path"];
 export function createBlankWorld({ name = "Untitled", width = 100, height = 56, starter = "blank" } = {}) {
   const cells = new Array(width * height).fill(0);
   if (starter === "island") {
-    // a chunky starter patch of grass in the centre (half-res rasterize, 2x upscale,
-    // same trick as the scene generator, for even coastline runs)
-    const rx = Math.max(6, width / 5), ry = Math.max(4, height / 5);
-    const cx = width / 2, cy = height / 2;
-    for (let hy = 0; hy < Math.ceil(height / 2); hy++)
-      for (let hx = 0; hx < Math.ceil(width / 2); hx++) {
-        const dx = (hx + 0.5 - cx / 2) / (rx / 2), dy = (hy + 0.5 - cy / 2) / (ry / 2);
-        if (dx * dx + dy * dy > 1) continue;
-        for (let sy = 0; sy < 2; sy++)
-          for (let sx = 0; sx < 2; sx++) {
-            const x = hx * 2 + sx, y = hy * 2 + sy;
-            if (x < width && y < height) cells[y * width + x] = 1; // grass
-          }
+    // a smooth, strictly-CONVEX full-resolution ellipse. This pack has no
+    // inner-corner or 90° corner tiles, so only convex coasts autotile cleanly
+    // (straight edges + 45° outer bevels); any concavity would leave a blue notch.
+    const cx = (width - 1) / 2, cy = (height - 1) / 2;
+    const rx = width * 0.40, ry = height * 0.40;
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++) {
+        const dx = (x - cx) / rx, dy = (y - cy) / ry;
+        if (dx * dx + dy * dy <= 1) cells[y * width + x] = 1; // grass
       }
   }
   const now = new Date().toISOString();

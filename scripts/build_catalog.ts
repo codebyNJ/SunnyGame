@@ -229,7 +229,7 @@ const catalog = {
   generated: new Date().toISOString(),
   tilesets: {
     tileset_sunnysideworld: { file: "Tileset/spr_tileset_sunnysideworld_16px.png", tile: 16, cols: 64 },
-    tileset_forest: { file: "Tileset/spr_tileset_sunnysideworld_forest_32px.png", tile: 32, cols: 10 },
+    tileset_forest: { file: "Tileset/spr_tileset_sunnysideworld_forest_32px.png", tile: 32, cols: 13 },
   },
   terrains,
   animations,

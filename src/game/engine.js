@@ -65,7 +65,7 @@ export async function start(root, worldDoc, onProgress, onReady) {
     const isForest = layer.tileset === "tileset_forest";
     const ts = isForest ? tex.tilesetForest : tex.tileset;
     const tile = isForest ? 32 : 16;
-    const cols = isForest ? 10 : 64;
+    const cols = isForest ? 13 : 64;
     const c = new Container();
     for (let i = 0; i < layer.cells.length; i++) {
       const v = layer.cells[i];

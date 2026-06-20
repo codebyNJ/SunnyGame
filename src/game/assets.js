@@ -155,13 +155,17 @@ export function sliceStrip(base, declaredFrames) {
 }
 
 // tile texture cache from the 64-column tileset
+// GameMaker tilesets have a 2px border (out_tilehborder/out_tilevborder) around the tile grid
+const TILESET_BORDER = 2;
 const tileCache = new Map();
 export function tileTexture(tilesetTex, idx, tileSize = 16, cols = 64) {
-  const key = `${tileSize}:${idx}`;
+  const key = `${tileSize}:${cols}:${idx}`;
   if (tileCache.has(key)) return tileCache.get(key);
+  const x = TILESET_BORDER + (idx % cols) * tileSize;
+  const y = TILESET_BORDER + Math.floor(idx / cols) * tileSize;
   const t = new Texture({
     source: tilesetTex.source,
-    frame: new Rectangle((idx % cols) * tileSize, Math.floor(idx / cols) * tileSize, tileSize, tileSize),
+    frame: new Rectangle(x, y, tileSize, tileSize),
   });
   tileCache.set(key, t);
   return t;

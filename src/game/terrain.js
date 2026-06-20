@@ -46,6 +46,28 @@ function foamRing(land, mask, W, H) {
     }
 }
 
+// Grass-island autotile by neighbour mask (N=1 E=2 S=4 W=8, bit set = grass).
+// Tiles verified against the example room; the south edge/corners use the north
+// beach tiles flipped vertically so all four shores are clean beaches (no cliff).
+const GRASS_T = {
+  15: 193,                          // interior
+  14: 196, 11: 196 | F,             // top / bottom edge   (one clean tile, flipped)
+  7: 198, 13: 198 | M,              // left / right edge   (one clean tile, mirrored)
+  6: 200, 12: 200 | M,              // TL / TR corner      (one clean corner tile…)
+  3: 200 | F, 9: 200 | M | F,       // BL / BR corner      (…mirrored + flipped)
+  // thin protrusions / peninsula tips (placeholders, refined when shapes scale up)
+  1: 196 | F, 4: 196, 2: 198, 8: 198 | M, 5: 198, 10: 196, 0: 193,
+};
+function autotileGrass(land, mask, W, H) {
+  const at = (x, y) => (x >= 0 && y >= 0 && x < W && y < H ? mask[y * W + x] : 1);
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      if (!mask[y * W + x]) continue;
+      const bm = (at(x, y - 1) ? 1 : 0) | (at(x + 1, y) ? 2 : 0) | (at(x, y + 1) ? 4 : 0) | (at(x - 1, y) ? 8 : 0);
+      land[y * W + x] = GRASS_T[bm] ?? 193;
+    }
+}
+
 const TERRAINS = Object.fromEntries(catalog.terrains.map((t) => [t.id, t]));
 const SEA = catalog.terrains.find((t) => t.id === "sea");
 const BASE = catalog.terrains.find((t) => t.base);
@@ -61,7 +83,7 @@ export function computeTerrain(tcells, types, W, H) {
   const baseMask = new Uint8Array(N);
   let anyBase = false;
   for (let i = 0; i < N; i++) if (tcells[i] === baseIdx) { baseMask[i] = 1; anyBase = true; }
-  if (anyBase) { autotile(land, baseMask, BASE.set, W, H); foamRing(land, baseMask, W, H); }
+  if (anyBase) { autotileGrass(land, baseMask, W, H); /* foam added after grass is pixel-perfect */ }
 
   // overlay types (paths, river, stone path…) onto their layer
   for (let ti = 0; ti < types.length; ti++) {

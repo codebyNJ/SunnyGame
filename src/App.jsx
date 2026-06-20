@@ -6,6 +6,7 @@ import GameView from "./ui/GameView.jsx";
 import { loadWorld, getLastWorld } from "./ui/storage.js";
 import "./App.css";
 import "./ui/menu.css";
+import "./ui/menu-scene.css";
 
 // App state machine: menu -> (new | picker overlay) -> play. The pack loading
 // screen lives inside GameView between selecting a world and the engine being ready.
@@ -69,7 +70,7 @@ export default function App() {
       )}
       {overlay === "new" && <NewWorldDialog onCreate={startNew} onCancel={() => setOverlay(null)} />}
       {overlay === "picker" && (
-        <WorldPicker onOpen={openSaved} onImport={(doc) => startNew(doc)} onCancel={() => setOverlay(null)} />
+        <WorldPicker onOpen={openSaved} onImport={(doc) => startNew(doc)} onNew={() => setOverlay("new")} onCancel={() => setOverlay(null)} />
       )}
     </>
   );
