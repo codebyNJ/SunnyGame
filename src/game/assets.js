@@ -69,6 +69,28 @@ const UI = {
   ui_happy: "UI/happiness_03.png",
 };
 
+// the conditional textures a single entity spec needs (characters + crops; all
+// decor/animal/VFX/UI textures are always loaded). Used at load time and lazily
+// when the user places a new entity.
+export function entityManifest(spec) {
+  const e = {};
+  if (spec.kind === "human") {
+    const [folder, token, n] = HUMAN_ANIMS[spec.anim] ?? HUMAN_ANIMS.idle;
+    for (const layer of ["base", spec.hair, spec.tools ? "tools" : null]) {
+      if (!layer) continue;
+      e[`h_${layer}_${spec.anim}`] = `${PACK}/Characters/Human/${folder}/${layer}_${token}_strip${n}.png`;
+    }
+  } else if (spec.kind === "goblin" && GOBLIN_ANIMS[spec.anim]) {
+    e[`g_${spec.anim}`] = `${PACK}/Characters/Goblin/PNG/spr_${spec.anim}_strip${GOBLIN_ANIMS[spec.anim]}.png`;
+  } else if (spec.kind === "skeleton" && SKELETON_ANIMS[spec.anim]) {
+    e[`s_${spec.anim}`] = `${PACK}/Characters/Skeleton/PNG/skeleton_${spec.anim}_strip${SKELETON_ANIMS[spec.anim]}.png`;
+  } else if (spec.kind === "crop") {
+    const stage = String(spec.stage ?? 5).padStart(2, "0");
+    e[`crop_${spec.crop}_${spec.stage ?? 5}`] = `${PACK}/Elements/Crops/${spec.crop}_${stage}.png`;
+  }
+  return e;
+}
+
 export function buildManifest(map) {
   const entries = {
     tileset: `${PACK}/Tileset/spr_tileset_sunnysideworld_16px.png`,
@@ -76,29 +98,42 @@ export function buildManifest(map) {
   };
   for (const [k, [p]] of Object.entries(SPRITES)) entries[k] = `${PACK}/${p}`;
   for (const [k, p] of Object.entries(UI)) entries[k] = `${PACK}/${p}`;
-  // only the human layer/anim combos the map actually uses
-  for (const npc of map.npcs) {
-    if (npc.kind !== "human") continue;
-    const [folder, token, n] = HUMAN_ANIMS[npc.anim];
-    for (const layer of ["base", npc.hair, npc.tools ? "tools" : null]) {
-      if (!layer) continue;
-      entries[`h_${layer}_${npc.anim}`] = `${PACK}/Characters/Human/${folder}/${layer}_${token}_strip${n}.png`;
-    }
-  }
-  for (const npc of map.npcs) {
-    if (npc.kind === "goblin") entries[`g_${npc.anim}`] = `${PACK}/Characters/Goblin/PNG/spr_${npc.anim}_strip${GOBLIN_ANIMS[npc.anim]}.png`;
-    if (npc.kind === "skeleton") entries[`s_${npc.anim}`] = `${PACK}/Characters/Skeleton/PNG/skeleton_${npc.anim}_strip${SKELETON_ANIMS[npc.anim]}.png`;
-  }
+  for (const npc of map.npcs) Object.assign(entries, entityManifest(npc));
+  for (const sp of map.sprites) if (sp.kind === "crop") Object.assign(entries, entityManifest(sp));
   return entries;
 }
 
+// ensure a placed entity's textures are loaded (idempotent); resolves when ready
+export async function ensureTextures(spec) {
+  const man = entityManifest(spec);
+  const aliases = Object.keys(man);
+  const toLoad = [];
+  for (const a of aliases) {
+    if (registered.has(a)) continue;
+    Assets.add({ alias: a, src: encodeURI(man[a]) });
+    registered.add(a);
+    toLoad.push(a);
+  }
+  if (toLoad.length) await Assets.load(toLoad);
+  const tex = {};
+  for (const a of aliases) tex[a] = Assets.get(a);
+  return tex;
+}
+
+// alias->url registered once so loading another world (menu->play->menu->play)
+// never re-adds an alias; aliases are content-derived so a name always maps to
+// the same url. Cached urls resolve instantly on the next load.
+const registered = new Set();
 export async function loadAll(map, onProgress) {
   TextureSource.defaultOptions.scaleMode = "nearest";
   const manifest = buildManifest(map);
-  for (const k of Object.keys(manifest)) manifest[k] = encodeURI(manifest[k]);
   const aliases = Object.keys(manifest);
-  Assets.addBundle("game", manifest);
-  await Assets.loadBundle("game", onProgress);
+  for (const a of aliases) {
+    if (registered.has(a)) continue;
+    Assets.add({ alias: a, src: encodeURI(manifest[a]) });
+    registered.add(a);
+  }
+  await Assets.load(aliases, onProgress);
   const tex = {};
   for (const a of aliases) tex[a] = Assets.get(a);
   return tex;
@@ -120,13 +155,17 @@ export function sliceStrip(base, declaredFrames) {
 }
 
 // tile texture cache from the 64-column tileset
+// GameMaker tilesets have a 2px border (out_tilehborder/out_tilevborder) around the tile grid
+const TILESET_BORDER = 2;
 const tileCache = new Map();
 export function tileTexture(tilesetTex, idx, tileSize = 16, cols = 64) {
-  const key = `${tileSize}:${idx}`;
+  const key = `${tileSize}:${cols}:${idx}`;
   if (tileCache.has(key)) return tileCache.get(key);
+  const x = TILESET_BORDER + (idx % cols) * tileSize;
+  const y = TILESET_BORDER + Math.floor(idx / cols) * tileSize;
   const t = new Texture({
     source: tilesetTex.source,
-    frame: new Rectangle((idx % cols) * tileSize, Math.floor(idx / cols) * tileSize, tileSize, tileSize),
+    frame: new Rectangle(x, y, tileSize, tileSize),
   });
   tileCache.set(key, t);
   return t;
